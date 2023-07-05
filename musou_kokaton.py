@@ -46,6 +46,18 @@ class Bird(pg.sprite.Sprite):
         pg.K_LEFT: (-1, 0),
         pg.K_RIGHT: (+1, 0),
     }
+    img0 = pg.transform.rotozoom(pg.image.load(f"ex04/fig/{num}.png"), 0, 2.0)
+    img = pg.transform.flip(img0, True, False)  # デフォルトのこうかとん
+    imgs = {
+        (+1, 0): img,  # 右
+        (+1, -1): pg.transform.rotozoom(img, 45, 1.0),  # 右上
+        (0, -1): pg.transform.rotozoom(img, 90, 1.0),  # 上
+        (-1, -1): pg.transform.rotozoom(img0, -45, 1.0),  # 左上
+        (-1, 0): img0,  # 左
+        (-1, +1): pg.transform.rotozoom(img0, 45, 1.0),  # 左下
+        (0, +1): pg.transform.rotozoom(img, -90, 1.0),  # 下
+        (+1, +1): pg.transform.rotozoom(img, -45, 1.0),  # 右下
+    }
 
     def __init__(self, num: int, xy: tuple[int, int]):
         """
@@ -54,20 +66,8 @@ class Bird(pg.sprite.Sprite):
         引数2 xy：こうかとん画像の位置座標タプル
         """
         super().__init__()
-        img0 = pg.transform.rotozoom(pg.image.load(f"ex04/fig/{num}.png"), 0, 2.0)
-        img = pg.transform.flip(img0, True, False)  # デフォルトのこうかとん
-        self.imgs = {
-            (+1, 0): img,  # 右
-            (+1, -1): pg.transform.rotozoom(img, 45, 1.0),  # 右上
-            (0, -1): pg.transform.rotozoom(img, 90, 1.0),  # 上
-            (-1, -1): pg.transform.rotozoom(img0, -45, 1.0),  # 左上
-            (-1, 0): img0,  # 左
-            (-1, +1): pg.transform.rotozoom(img0, 45, 1.0),  # 左下
-            (0, +1): pg.transform.rotozoom(img, -90, 1.0),  # 下
-            (+1, +1): pg.transform.rotozoom(img, -45, 1.0),  # 右下
-        }
         self.dire = (+1, 0)
-        self.image = self.imgs[self.dire]
+        self.image = __class__.imgs[self.dire]
         self.rect = self.image.get_rect()
         self.rect.center = xy
         self.speed = 10
@@ -99,7 +99,7 @@ class Bird(pg.sprite.Sprite):
                     self.rect.move_ip(-self.speed*mv[0], -self.speed*mv[1])
         if not (sum_mv[0] == 0 and sum_mv[1] == 0):
             self.dire = tuple(sum_mv)
-            self.image = self.imgs[self.dire]
+            self.image = __class__.imgs[self.dire]
         screen.blit(self.image, self.rect)
     
     def get_direction(self) -> tuple[int, int]:
@@ -175,6 +175,9 @@ class Explosion(pg.sprite.Sprite):
     """
     爆発に関するクラス
     """
+    img = pg.image.load("ex04/fig/explosion.gif")
+    imgs = [img, pg.transform.flip(img, 1, 1)]
+
     def __init__(self, obj: "Bomb|Enemy", life: int):
         """
         爆弾が爆発するエフェクトを生成する
@@ -182,9 +185,7 @@ class Explosion(pg.sprite.Sprite):
         引数2 life：爆発時間
         """
         super().__init__()
-        img = pg.image.load("ex04/fig/explosion.gif")
-        self.imgs = [img, pg.transform.flip(img, 1, 1)]
-        self.image = self.imgs[0]
+        self.image = __class__.imgs[0]
         self.rect = self.image.get_rect(center=obj.rect.center)
         self.life = life
 
@@ -194,7 +195,7 @@ class Explosion(pg.sprite.Sprite):
         爆発エフェクトを表現する
         """
         self.life -= 1
-        self.image = self.imgs[self.life//10%2]
+        self.image = __class__.imgs[self.life//10%2]
         if self.life < 0:
             self.kill()
 
